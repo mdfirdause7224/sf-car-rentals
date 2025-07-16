@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Download, X, Smartphone, Loader2, Share2 } from "lucide-react"
+import { Download, X, Smartphone, Loader2, Share2, Bug } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -17,21 +17,30 @@ export default function InstallPrompt() {
   const [isInstalling, setIsInstalling] = useState(false) // For Android: when prompt is shown
   const [isInstalled, setIsInstalled] = useState(false) // When app is successfully installed
 
+  // Debug state to show/hide debug info
+  const [showDebug, setShowDebug] = useState(false)
+
   useEffect(() => {
+    console.log("InstallPrompt useEffect running...")
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent)
     setIsIOS(isIOSDevice)
+    console.log("Is iOS device:", isIOSDevice)
 
     // Check if app is already installed (standalone mode)
     const isStandalone = typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches
+    console.log("Is standalone mode:", isStandalone)
+
     if (isStandalone) {
       setIsInstalled(true) // App is already installed
       setShowPromptUI(false) // No need to show prompt
+      console.log("App is already installed (standalone mode). Hiding prompt.")
       return
     }
 
     // For iOS, if not in standalone mode, always show instructions
     if (isIOSDevice) {
       setShowPromptUI(true)
+      console.log("On iOS, not standalone. Showing prompt UI.")
     }
 
     // Listen for the beforeinstallprompt event for Android/desktop
@@ -39,13 +48,14 @@ export default function InstallPrompt() {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       setShowPromptUI(true) // Show prompt for Android/desktop
+      console.log("beforeinstallprompt event fired. Showing prompt UI.")
     }
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
 
     // Listen for appinstalled event
     const handleAppInstalled = () => {
-      console.log("PWA was installed")
+      console.log("PWA was installed (appinstalled event).")
       setIsInstalled(true)
       setShowPromptUI(false) // Hide the prompt after successful installation
       if (typeof window !== "undefined") {
@@ -54,13 +64,16 @@ export default function InstallPrompt() {
     }
     window.addEventListener("appinstalled", handleAppInstalled)
 
+    // --- TEMPORARY FOR DEBUGGING: Comment out for production ---
     // Check if user previously dismissed the prompt
-    if (typeof window !== "undefined") {
-      const dismissed = localStorage.getItem("installPromptDismissed")
-      if (dismissed === "true") {
-        setShowPromptUI(false)
-      }
-    }
+    // if (typeof window !== "undefined") {
+    //   const dismissed = localStorage.getItem("installPromptDismissed")
+    //   if (dismissed === "true") {
+    //     setShowPromptUI(false)
+    //     console.log("Prompt previously dismissed. Hiding prompt UI.");
+    //   }
+    // }
+    // --- END TEMPORARY DEBUGGING ---
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
@@ -71,6 +84,7 @@ export default function InstallPrompt() {
   const handleInstallClick = useCallback(async () => {
     if (deferredPrompt) {
       setIsInstalling(true) // Show installing state
+      console.log("Attempting to prompt for installation...")
       deferredPrompt.prompt()
       const { outcome } = await deferredPrompt.userChoice
       console.log(`User response to the install prompt: ${outcome}`)
@@ -91,12 +105,23 @@ export default function InstallPrompt() {
     setShowPromptUI(false)
     if (typeof window !== "undefined") {
       localStorage.setItem("installPromptDismissed", "true")
+      console.log("Prompt dismissed. Set 'installPromptDismissed' in localStorage.")
+    }
+  }, [])
+
+  const handleResetPrompt = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("installPromptDismissed")
+      setIsInstalled(false)
+      setShowPromptUI(true) // Try to show it again
+      console.log("Install prompt dismissed flag cleared from localStorage. Attempting to show prompt.")
+      // Force a re-evaluation of the useEffect conditions
+      window.location.reload()
     }
   }, [])
 
   if (!showPromptUI) return null
-
-  // If already installed, don't show anything
+  // Should be caught by useEffect, but double-check for safety
   if (isInstalled) return null
 
   return (
@@ -129,7 +154,8 @@ export default function InstallPrompt() {
                 </Button>
               ) : (
                 <>
-                  {!isIOS && (
+                  {/* Show install button if prompt available or in development mode for testing */}
+                  {!isIOS && (deferredPrompt || process.env.NODE_ENV === "development") && (
                     <Button
                       onClick={handleInstallClick}
                       size="sm"
@@ -151,6 +177,30 @@ export default function InstallPrompt() {
               )}
             </div>
           </div>
+          {/* Debugging section - only visible in development */}
+          {process.env.NODE_ENV === "development" && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDebug(!showDebug)}
+                className="text-xs text-gray-500"
+              >
+                <Bug className="h-3 w-3 mr-1" /> Debug Info
+              </Button>
+              {showDebug && (
+                <div className="mt-2 text-xs text-gray-600 space-y-1">
+                  <p>isIOS: {isIOS ? "true" : "false"}</p>
+                  <p>isInstalled: {isInstalled ? "true" : "false"}</p>
+                  <p>showPromptUI: {showPromptUI ? "true" : "false"}</p>
+                  <p>deferredPrompt: {deferredPrompt ? "available" : "null"}</p>
+                  <Button onClick={handleResetPrompt} size="sm" className="mt-2 bg-red-500 hover:bg-red-600 text-white">
+                    Reset Install Prompt
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
