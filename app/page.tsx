@@ -4,12 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import Image from "next/image"
-import dynamic from "next/dynamic"
-
-// Dynamically import InstallPrompt to avoid SSR issues
-const InstallPromptWrapper = dynamic(() => import("@/components/install-prompt-wrapper"), {
-  ssr: false,
-})
+// Removed dynamic import for InstallPromptWrapper from here
+import InstallPromptWrapper from "@/components/install-prompt-wrapper" // Directly import the client component
 
 export default function HomePage() {
   const carTypes = [
