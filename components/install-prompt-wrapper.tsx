@@ -1,10 +1,6 @@
 "use client"
 
-import dynamic from "next/dynamic"
-
-const InstallPrompt = dynamic(() => import("@/components/install-prompt"), {
-  ssr: false,
-})
+import InstallPrompt from "@/components/install-prompt" // Directly import, no need for dynamic here
 
 export default function InstallPromptWrapper() {
   return <InstallPrompt />
