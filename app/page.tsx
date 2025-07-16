@@ -4,8 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import Image from "next/image"
-// Removed dynamic import for InstallPromptWrapper from here
-import InstallPromptWrapper from "@/components/install-prompt-wrapper" // Directly import the client component
+import InstallPromptWrapper from "@/components/install-prompt-wrapper"
 
 export default function HomePage() {
   const carTypes = [

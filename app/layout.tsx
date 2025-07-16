@@ -2,6 +2,8 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { createServerClient } from "@/lib/supabase/server" // Import server client
+import UserMenu from "@/components/auth/user-menu" // Import UserMenu
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -75,11 +77,17 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Fetch user session on the server for initial render
+  const supabase = createServerClient()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
   return (
     <html lang="en">
       <head>
@@ -90,7 +98,13 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#318cc6" />
       </head>
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50">{children}</div>
+        <div className="min-h-screen bg-gray-50">
+          {/* Add UserMenu to the layout */}
+          <div className="fixed top-4 right-4 z-50">
+            <UserMenu initialSession={session} />
+          </div>
+          {children}
+        </div>
       </body>
     </html>
   )
