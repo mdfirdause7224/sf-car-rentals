@@ -1,11 +1,3 @@
-"use client"
-
-import dynamic from "next/dynamic"
-
-const InstallPrompt = dynamic(() => import("@/components/install-prompt"), {
-  ssr: false,
-})
-
-export default function InstallPromptWrapper() {
-  return <InstallPrompt />
-}
+// This file is no longer needed as InstallPrompt is directly imported in page.tsx
+// and the dynamic import logic is reverted to its original state.
+// This file will be deleted.

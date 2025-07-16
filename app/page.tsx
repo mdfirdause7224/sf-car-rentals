@@ -4,7 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import Image from "next/image"
-import InstallPromptWrapper from "@/components/install-prompt-wrapper"
+import dynamic from "next/dynamic"
+
+// Dynamically import InstallPrompt to avoid SSR issues
+const InstallPrompt = dynamic(() => import("@/components/install-prompt"), {
+  ssr: false,
+})
 
 export default function HomePage() {
   const carTypes = [
@@ -282,24 +287,22 @@ export default function HomePage() {
 
           <div className="space-y-3">
             <div className="flex items-center justify-center space-x-3 text-sm">
-              <div className="flex items-center space-x-2 bg-green-100 px-3 py-2 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-800 font-bold">24/7 Available</span>
-              </div>
-              <div className="flex items-center space-x-2 bg-blue-100 px-3 py-2 rounded-full">
-                <Phone className="h-3 w-3 text-blue-600" />
-                <span className="text-blue-800 font-bold">+91 98765 43210</span>
-              </div>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-green-800 font-bold">24/7 Available</span>
             </div>
-            <p className="text-xs text-astronaut-blue-500 font-medium">
-              🔒 Secure booking • ⚡ Instant confirmation • 🚗 Premium service
-            </p>
+            <div className="flex items-center space-x-2 bg-blue-100 px-3 py-2 rounded-full">
+              <Phone className="h-3 w-3 text-blue-600" />
+              <span className="text-blue-800 font-bold">+91 98765 43210</span>
+            </div>
           </div>
+          <p className="text-xs text-astronaut-blue-500 font-medium">
+            🔒 Secure booking • ⚡ Instant confirmation • 🚗 Premium service
+          </p>
         </div>
       </main>
 
       {/* Install Prompt */}
-      <InstallPromptWrapper />
+      <InstallPrompt />
     </div>
   )
 }
