@@ -7,7 +7,7 @@ import Image from "next/image"
 import dynamic from "next/dynamic"
 
 // Dynamically import InstallPrompt to avoid SSR issues
-const InstallPrompt = dynamic(() => import("@/components/install-prompt"), {
+const InstallPromptWrapper = dynamic(() => import("@/components/install-prompt-wrapper"), {
   ssr: false,
 })
 
@@ -302,7 +302,7 @@ export default function HomePage() {
       </main>
 
       {/* Install Prompt */}
-      <InstallPrompt />
+      <InstallPromptWrapper />
     </div>
   )
 }
